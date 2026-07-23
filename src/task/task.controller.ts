@@ -45,4 +45,19 @@ export class TaskController {
       req.user.userId,
     );
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id')
+  update(
+    @Parama('idd') id: string,
+    @Body() updateTaskDto: updateTaskDTo,
+    @Req() req: any,
+  ) {
+    return this.taskService.update(
+      id,
+      updateTaskDto,
+      req.user.userId,
+    );
+  }
+
 }

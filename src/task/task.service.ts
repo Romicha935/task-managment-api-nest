@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
@@ -31,16 +31,52 @@ export class TaskService {
   }
 
   async findOne(id: string, userId: string) {
-    return await this.prisma.task.findFirst({
+    const task = await this.prisma.task.findFirst({
       where: {
         id,
         userId,
       },
     });
+
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
+
+    return {
+      message: 'Task fetched successfully',
+      data: task,
+    };
   }
 
-  update(id: number, updateTaskDto: UpdateTaskDto) {
-    return `This action updates a #${id} task`;
+   async update(id: number, updateTaskDto: UpdateTaskDto, userId: string) {
+    const task = await this.prisma.task.findFirst({
+      where: {
+      id,
+      userId,
+    },
+    })
+
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
+
+    const updatedTask = await this.prisma.task.update({
+      where: {
+        id,
+        userId,
+      },
+      data: {
+        ...updateTaskDto,
+        ...(updatedTaskDto.dueDate && {
+          dueDate: new Date(updateTaskDto.dueDate)
+        }),
+      },
+    });
+
+    return {
+      message: 'Task updated successfully',
+      data: updatedTask,
+    };
   }
 
   remove(id: number) {
