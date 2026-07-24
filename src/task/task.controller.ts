@@ -1,8 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
+  Patch,
   Post,
   Req,
   UseGuards,
@@ -10,6 +12,7 @@ import {
 import { TaskService } from './task.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.auth.guard';
+import { UpdateTaskDto } from './dto/update-task.dto';
 
 
 @Controller('tasks')
@@ -49,13 +52,25 @@ export class TaskController {
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
   update(
-    @Parama('idd') id: string,
-    @Body() updateTaskDto: updateTaskDTo,
+    @Param('id') id: string,
+    @Body() updateTaskDto: UpdateTaskDto,
     @Req() req: any,
   ) {
     return this.taskService.update(
       id,
       updateTaskDto,
+      req.user.userId,
+    );
+  }
+  
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  remove(
+    @Param('id') id: string,
+    @Req() req: any,
+  ) {
+    return this.taskService.remove(
+      id,
       req.user.userId,
     );
   }

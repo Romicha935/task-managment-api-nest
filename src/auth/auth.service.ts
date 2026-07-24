@@ -77,4 +77,25 @@ export class AuthService {
       accessToken,
     };
   }
+
+  async profile(userId:string) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id:userId,
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    return {
+      message: 'User profile fetched successfully',
+      data: user,
+    };
+  }
 }

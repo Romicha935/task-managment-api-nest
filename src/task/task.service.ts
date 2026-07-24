@@ -48,7 +48,7 @@ export class TaskService {
     };
   }
 
-   async update(id: number, updateTaskDto: UpdateTaskDto, userId: string) {
+   async update(id: string, updateTaskDto: UpdateTaskDto, userId: string) {
     const task = await this.prisma.task.findFirst({
       where: {
       id,
@@ -60,18 +60,18 @@ export class TaskService {
       throw new NotFoundException('Task not found');
     }
 
-    const updatedTask = await this.prisma.task.update({
-      where: {
-        id,
-        userId,
-      },
-      data: {
-        ...updateTaskDto,
-        ...(updatedTaskDto.dueDate && {
-          dueDate: new Date(updateTaskDto.dueDate)
-        }),
-      },
-    });
+  const updatedTask = await this.prisma.task.update({
+  where: {
+    id,
+    userId,
+  },
+  data: {
+    ...updateTaskDto,
+    ...(updateTaskDto.dueDate && {
+      dueDate: new Date(updateTaskDto.dueDate),
+    }),
+  },
+});
 
     return {
       message: 'Task updated successfully',
@@ -79,7 +79,24 @@ export class TaskService {
     };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} task`;
+ async remove(id: string, userId: string) {
+   const task = await this.prisma.task.findFirst({
+    where: {
+      id,
+      userId,
+    },
+   });
+    if(!task) {
+      throw new NotFoundException('task not found')
+    }
+
+    await this.prisma.task.delete({
+      where: {
+        id,
+      },
+    })
+    return {
+      message: 'Task deleted successfully',
+    };
   }
 }
