@@ -22,14 +22,78 @@ export class TaskService {
     };
   }
 
-  async findAll(userId: string) {
-    return await this.prisma.task.findMany({
-      where: {
-        userId,
-      },
-    });
-  }
+async findAll(
+  userId: string,
+  page: number,
+  limit: number,
+  search?: string,
+  status?: string,
+  priority?: string,
+) {
+  const skip = (page - 1) * limit;
 
+  const total = await this.prisma.task.count({
+   where: {
+    userId,
+    ...(status && { status }),
+    ...(priority && { priority }),
+    ...(search && {
+      OR: [
+        {
+          title: {
+            contains: search,
+            mode: 'insensitive',
+          },
+        },
+        {
+          description: {
+            contains: search,
+            mode: 'insensitive',
+          },
+        },
+      ]
+    })
+   }
+  })
+
+  const totalPages = Math.ceil(total/limit)
+  const tasks = await this.prisma.task.findMany({
+    where: {
+      userId,
+      ...(search && {
+        OR: [
+          {
+            title: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+          {
+            description: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+        ],
+      }),
+    },
+    skip,
+    take: limit,
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
+  return {
+    message: 'Tasks fetched successfully',
+    meta: {
+      page,
+      limit,total,
+      totalPages,
+    },
+    data: tasks,
+  };
+}
   async findOne(id: string, userId: string) {
     const task = await this.prisma.task.findFirst({
       where: {
@@ -81,12 +145,12 @@ export class TaskService {
 
  async remove(id: string, userId: string) {
    const task = await this.prisma.task.findFirst({
-    where: {
+ where: {
       id,
       userId,
     },
    });
-    if(!task) {
+    if (!task) {
       throw new NotFoundException('task not found')
     }
 

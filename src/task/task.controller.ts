@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -31,11 +32,25 @@ export class TaskController {
     );
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get()
-  findAll(@Req() req: any) {
-    return this.taskService.findAll(req.user.userId);
-  }
+@UseGuards(JwtAuthGuard)
+@Get()
+findAll(
+  @Req() req: any,
+  @Query('page') page: string,
+  @Query('limit') limit: string,
+  @Query('search') search: string,
+  @Query('status') status: string,
+  @Query('priority') priority: string,
+) {
+  return this.taskService.findAll(
+    req.user.userId,
+    Number(page) || 1,
+    Number(limit) || 10,
+    search,
+    status,
+    priority,
+  );
+}
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
@@ -74,5 +89,5 @@ export class TaskController {
       req.user.userId,
     );
   }
+  }
 
-}
