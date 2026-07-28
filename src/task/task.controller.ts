@@ -41,6 +41,8 @@ findAll(
   @Query('search') search: string,
   @Query('status') status: string,
   @Query('priority') priority: string,
+  @Query('sortBy') sortBy: string,
+  @Query('order') order: 'asc' | 'desc' = 'desc',
 ) {
   return this.taskService.findAll(
     req.user.userId,
@@ -49,6 +51,8 @@ findAll(
     search,
     status,
     priority,
+    sortBy,
+    order,
   );
 }
 

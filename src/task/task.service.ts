@@ -29,6 +29,8 @@ async findAll(
   search?: string,
   status?: string,
   priority?: string,
+sortBy: string = 'createdAt',
+  order: 'asc' | 'desc' = 'desc',
 ) {
   const skip = (page - 1) * limit;
 
@@ -58,30 +60,39 @@ async findAll(
 
   const totalPages = Math.ceil(total/limit)
   const tasks = await this.prisma.task.findMany({
-    where: {
-      userId,
-      ...(search && {
-        OR: [
-          {
-            title: {
-              contains: search,
-              mode: 'insensitive',
-            },
-          },
-          {
-            description: {
-              contains: search,
-              mode: 'insensitive',
-            },
-          },
-        ],
-      }),
-    },
+ where: {
+  userId,
+
+  ...(status && {
+    status,
+  }),
+
+  ...(priority && {
+    priority,
+  }),
+
+  ...(search && {
+    OR: [
+      {
+        title: {
+          contains: search,
+          mode: 'insensitive',
+        },
+      },
+      {
+        description: {
+          contains: search,
+          mode: 'insensitive',
+        },
+      },
+    ],
+  }),
+},
     skip,
     take: limit,
-    orderBy: {
-      createdAt: 'desc',
-    },
+orderBy: {
+  [sortBy || 'createdAt']: order || 'desc',
+},
   });
 
   return {

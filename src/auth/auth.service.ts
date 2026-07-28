@@ -70,11 +70,25 @@ export class AuthService {
       email: user.email,
     };
 
-    const accessToken = await this.jwtService.signAsync(payload);
+    const accessToken = await this.jwtService.signAsync(payload,{expiresIn: '15m',});
+
+    const refreshToken = await this.jwtService.signAsync(payload,{expiresIn:'7d',})
+
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+
+    await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        refreshToken: hashedRefreshToken,
+      },
+    });
 
     return {
       message: 'Login successfull',
       accessToken,
+      refreshToken,
     };
   }
 
