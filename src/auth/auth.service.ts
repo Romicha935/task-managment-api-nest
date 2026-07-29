@@ -4,6 +4,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
+import { RefreshTokenDto } from './dto/refresh-token-dto';
 
 @Injectable()
 export class AuthService {
@@ -92,6 +93,50 @@ export class AuthService {
     };
   }
 
+  async refresh(refreshTokenDto: RefreshTokenDto) {
+    const {refreshToken} = refreshTokenDto;
+    const payload = await this.jwtService.verifyAsync(refreshToken)
+
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id:payload.sub,
+      },
+   })
+      if (!user) {
+        return {
+          message: 'User Not Found',
+        }
+      }
+
+      if (!user.refreshToken) {
+  return {
+    message: 'Refresh token expired',
+  };
+}
+
+  const isRefreshTokenMatched = await bcrypt.compare(
+  refreshToken,
+  user.refreshToken!,
+);
+
+      if (!isRefreshTokenMatched)
+        return {
+          message: 'Invalid refresh token',
+        }
+      
+
+        const newPayload = {
+          sub: user.id,
+          email: user.email
+        }
+  const accessToken = await this.jwtService.signAsync(newPayload, {expiresIn: '15m',});
+
+  return {
+    message: 'Access token refreshed successfully',
+    accessToken,
+  }
+  };
+
   async profile(userId:string) {
     const user = await this.prisma.user.findUnique({
       where: {
@@ -110,6 +155,21 @@ export class AuthService {
     return {
       message: 'User profile fetched successfully',
       data: user,
+    };
+  };
+
+  async logout(userId:string) {
+    await this.prisma.user.update({
+      where: {
+        id:userId,
+      },
+      data: {
+        refreshToken: null,
+      },
+    });
+
+    return {
+      message: 'User logged out successfully',
     };
   }
 }
