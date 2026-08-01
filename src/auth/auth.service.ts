@@ -171,5 +171,54 @@ export class AuthService {
     return {
       message: 'User logged out successfully',
     };
+  };
+
+  async changePassword(userId: string, changePasswordDto: any) {
+    const { oldPassword, newPassword } = changePasswordDto;
+
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!user) {
+      return {
+        message: 'User not found',
+      };
+    }
+
+    const isOldPasswordMatched = await bcrypt.compare(
+      oldPassword,
+      user.password,
+    );
+
+    if (oldPassword === newPassword) {
+  return {
+    message:
+      'New password cannot be the same as old password',
+  };
+}
+
+    if (!isOldPasswordMatched) {
+      return {
+        message: 'Old password is incorrect',
+      };
+    }
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    await this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        password: hashedNewPassword,
+      },
+    });
+
+    return {
+      message: 'Password changed successfully',
+    };
   }
 }
