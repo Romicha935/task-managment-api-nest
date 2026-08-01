@@ -8,6 +8,7 @@ import { RefreshTokenDto } from './dto/refresh-token-dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 
 
+
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -41,9 +42,11 @@ logout(@Req() req: any) {
   return this.authService.logout(req.user.userId);
 }
 
+
 @UseGuards(JwtAuthGuard)
 @Patch('change-password')
 changePassword(@Req() req: any, @Body() changePasswordDto: ChangePasswordDto) {
   return this.authService.changePassword(req.user.userId, changePasswordDto);
 }
 
+}
