@@ -6,6 +6,8 @@ import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './guards/jwt.auth.guard';
 import { RefreshTokenDto } from './dto/refresh-token-dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { VerifyOtpDto } from './dto/verify-otp-dto';
+import { ResetPasswordDto } from './dto/reset-password-dto';
 
 
 
@@ -49,4 +51,30 @@ changePassword(@Req() req: any, @Body() changePasswordDto: ChangePasswordDto) {
   return this.authService.changePassword(req.user.userId, changePasswordDto);
 }
 
+@Post('forgot-password')
+forgotPassword(
+  @Body() forgotPasswordDto: ForgotPasswordDto,
+) {
+  return this.authService.forgotPassword(
+    forgotPasswordDto,
+  );
+}
+
+@Post('verify-otp')
+verifyOtp(
+  @Body() verifyOtpDto: VerifyOtpDto,
+) {
+  return this.authService.verifyOtp(
+    verifyOtpDto,
+  );
+}
+
+@Post('reset-password')
+resetPassword(
+  @Body() resetPasswordDto: ResetPasswordDto,
+) {
+  return this.authService.resetPassword(
+    resetPasswordDto,
+  );
+}
 }

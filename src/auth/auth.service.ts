@@ -5,6 +5,8 @@ import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { RefreshTokenDto } from './dto/refresh-token-dto';
+import { VerifyOtpDto } from './dto/verify-otp-dto';
+import { ForgotPasswordDto } from './dto/forgot-password-dto';
 
 @Injectable()
 export class AuthService {
@@ -221,5 +223,140 @@ export class AuthService {
       message: 'Password changed successfully',
     };
 
+  };
+
+async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
+  const { email } = forgotPasswordDto;
+
+  const user = await this.prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+
+  if (!user) {
+    return {
+      message: 'User not found',
+    };
   }
+
+  const otp = Math.floor(
+    100000 + Math.random() * 900000,
+  ).toString();
+
+  const otpExpiry = new Date(
+    Date.now() + 5 * 60 * 1000,
+  );
+
+  await this.prisma.user.update({
+    where: {
+      id: user.id,
+    },
+    data: {
+      otp,
+      otpExpiry,
+    },
+  });
+
+  // TODO: Send OTP via email
+  console.log('OTP:', otp);
+
+  return {
+    message: 'OTP sent successfully',
+  };
+}
+
+async verifyOtp(verifyOtpDto: VerifyOtpDto) {
+  const { email, otp } = verifyOtpDto;
+
+  const user = await this.prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+
+  if (!user) {
+    return {
+      message: 'User not found',
+    };
+  }
+
+  if (!user.otp || !user.otpExpiry) {
+    return {
+      message: 'OTP not found',
+    };
+  }
+
+  if (new Date() > user.otpExpiry) {
+    return {
+      message: 'OTP expired',
+    };
+  }
+
+  if (user.otp !== otp) {
+    return {
+      message: 'Invalid OTP',
+    };
+  }
+
+  return {
+    message: 'OTP verified successfully',
+  };
+};
+
+async resetPassword(resetPasswordDto: ResetPasswordDto) {
+  const { email, otp, newPassword } = resetPasswordDto;
+
+  const user = await this.prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+
+  if (!user) {
+    return {
+      message: 'User not found',
+    };
+  }
+
+  if (!user.otp || !user.otpExpiry) {
+    return {
+      message: 'OTP not found',
+    };
+  }
+
+  if (new Date() > user.otpExpiry) {
+    return {
+      message: 'OTP expired',
+    };
+  }
+
+  if (user.otp !== otp) {
+    return {
+      message: 'Invalid OTP',
+    };
+  }
+
+  const hashedPassword = await bcrypt.hash(
+    newPassword,
+    10,
+  );
+
+  await this.prisma.user.update({
+    where: {
+      id: user.id,
+    },
+    data: {
+      password: hashedPassword,
+      otp: null,
+      otpExpiry: null,
+      refreshToken: null,
+    },
+  });
+
+  return {
+    message: 'Password reset successfully',
+  };
+}
+
 }
