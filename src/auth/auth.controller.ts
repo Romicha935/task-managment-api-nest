@@ -8,6 +8,7 @@ import { RefreshTokenDto } from './dto/refresh-token-dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { VerifyOtpDto } from './dto/verify-otp-dto';
 import { ResetPasswordDto } from './dto/reset-password-dto';
+import { ForgotPasswordDto } from './dto/forgot-password-dto';
 
 
 
