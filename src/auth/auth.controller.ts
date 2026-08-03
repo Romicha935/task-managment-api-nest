@@ -9,6 +9,9 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { VerifyOtpDto } from './dto/verify-otp-dto';
 import { ResetPasswordDto } from './dto/reset-password-dto';
 import { ForgotPasswordDto } from './dto/forgot-password-dto';
+import { Role } from '@prisma/client';
+import { Roles } from './decorator/roles.decorator';
+import { RolesGuard } from './roles.guard';
 
 
 
@@ -77,5 +80,14 @@ resetPassword(
   return this.authService.resetPassword(
     resetPasswordDto,
   );
+}
+
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(Role.ADMIN)
+@Get('admin-test')
+adminTest() {
+  return {
+    message: 'Welcome Admin',
+  };
 }
 }
