@@ -7,7 +7,6 @@ import { ServiceService } from './service/service.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { TaskModule } from './task/task.module';
 import { UserModule } from './user/user.module';
-import { LoggerMiddleware } from './logger/logger.middleware';
 
 @Module({
   imports: [
