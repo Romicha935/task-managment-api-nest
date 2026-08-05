@@ -12,8 +12,12 @@ import { ForgotPasswordDto } from './dto/forgot-password-dto';
 import { Role } from '@prisma/client';
 import { Roles } from './decorator/roles.decorator';
 import { RolesGuard } from './roles.guard';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 
-
+type CurrentUserType = {
+  userId: string;
+  email: string;
+};
 
 @Controller('auth')
 export class AuthController {
@@ -38,8 +42,8 @@ export class AuthController {
   
   @UseGuards(JwtAuthGuard)
    @Get('profile')
-  getProfile(@Req() req: any) {
-   return this.authService.profile(req.user.userId)
+  getProfile(@CurrentUser() user: CurrentUserType) {
+   return this.authService.profile(user.userId)
   }
 
   @UseGuards(JwtAuthGuard)

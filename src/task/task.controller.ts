@@ -14,6 +14,7 @@ import { TaskService } from './task.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.auth.guard';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { ParseIntPipe } from 'src/common/pipe/parse-int.pipe';
 
 
 @Controller('tasks')
@@ -59,7 +60,7 @@ findAll(
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   findOne(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: string,
     @Req() req: any,
   ) {
     return this.taskService.findOne(
